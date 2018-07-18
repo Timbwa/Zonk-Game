@@ -29,22 +29,28 @@ int roll(){
     return die;
 }
 
-// function to check correct char input
-void errorCheck(char choice){
-    while ((choice != 'y' && choice != 'Y') && (choice != 'n' && choice != 'N')){
-        printf("Please enter (Y/N): ");
-        fflush(stdin);
-        scanf("%c",&choice);
+// function to choose between Y or N
+int contGame(char c){
+    if(c == 'y' || c == 'Y'){
+        return 1;
+    }
+    else if(c == 'n' || c == 'N'){
+        return 0;
+    }
+    else{
+        return -1; // returns -1 if neither Y or N is entered
     }
 }
 
-// function to contiue game
-void contGame(char choice){
-    if(choice != 'y' && choice != 'Y'){
-        printf("\n Ok byee ...");
-        exit(1);
+// function to check for wrong input in yes or no
+void charError(char c){
+    while(contGame(c) < 0){
+        printf("Please enter a (Y/N): \n");
+        fflush(stdin);
+        scanf("%c",&c);
     }
 }
+
 
 // function to decide who starts
 void start(User *user, Comp *comp){
@@ -53,10 +59,17 @@ void start(User *user, Comp *comp){
     printf("Are you ready to Zonk! Shall I roll the dice for you (Y/N)? ");
     fflush(stdin);
     scanf("%c",&(*user).choice);
-    //errorCheck(user.choice);
-    //contGame(user.choice);
-    (*user).dieInit = roll();
-    printf("I have rolled the dice for you and you get %d\n",(*user).dieInit);
+    charError((*user).choice);
+    //contGame((*user).choice);
+    if(!contGame((*user).choice)){
+        printf("Ok byee ...");
+        exit(1);
+    }else{
+        (*user).dieInit = roll();
+        printf("I have rolled the dice for you and you get %d\n",(*user).dieInit);
+    }
+
+
 }
 
 void playComputer(){
@@ -82,8 +95,6 @@ int main(){
 
     start(userAddr,compAddr);
 
-    printf("comp init: %d\n",comp.dieInit);
-    printf("user init: %d\n",user.dieInit);
     for(i = 0;i < game.rounds;++i){
         if(comp.dieInit >= user.dieInit){ // comps start if dice is >= user.dieInit
             playComputer();
