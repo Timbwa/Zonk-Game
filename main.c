@@ -1,6 +1,16 @@
+
+/*
+ * Author: David Timbwa
+ * Date: 28/8/2018
+ *
+ * Title: Simplest Version of the Famous ZONK Game
+ *
+ * */
+
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
+
 
 // define computer, user and game structures
 struct Comp{
@@ -26,7 +36,7 @@ typedef struct Game Game;
 
 // function to roll a die
 int roll(){
-    int die = 1 + (int)rand() % 6;
+    int die = 1 + rand() % 6;
     return die;
 }
 
@@ -44,6 +54,7 @@ void printDice(int dice[6]){
     for (int i = 0; i < 6; ++i) {
         printf("[Dice %d]: %d ", i + 1,dice[i]);
     }
+    printf("\n");
 }
 
 // function to choose between Y or N
@@ -173,30 +184,93 @@ int sumOfStraight(int dice[6]){
     return sum;
 }
 
-int computerStrategyDecider(Comp *comp){
+// function to check for highest value in an array
+int highestPoints(int arr[]){
+    int i;
+    int max = arr[0];
 
+    for (i = 1; i < 5; ++i) {
+        if (arr[i] > max){
+            max = arr[i];
+        }
+    }
+    return max;
 }
+
+
+
+void computerStrategyDecider(Comp *comp){
+    int compPoints[] = {sumFives((*comp).dice),
+                        sumOnes((*comp).dice),
+                        sumOfThrees((*comp).dice),
+                        sumOfStraight((*comp).dice),
+                        sumOfAKind((*comp).dice)};
+    int points = highestPoints(compPoints);
+    (*comp).score += points;
+
+    if (points == 0){
+        printf("\nZONK!!!!");
+        printf("\nMY score: Z");
+    }else{
+        printf("\nMY score: %d ",points);
+    }}
 
 void playComputer(Comp *comp){
     for (int i = 0; i < 6; ++i) {
         (*comp).dice[i] = roll();
     }
-    printf("\nMy Turn: \n");
-    printf("I got:\n");
-    printDice((*comp).dice);
+    printf("\nMy Turn:");
     equalSign();
+    printf("\nI got => ");
+    printDice((*comp).dice);
+    computerStrategyDecider(comp);
+}
+
+void userDecider(User *user){
+    int userPoints[] = {sumFives((*user).dice),
+                       sumOnes((*user).dice),
+                       sumOfThrees((*user).dice),
+                       sumOfStraight((*user).dice),
+                       sumOfAKind((*user).dice)};
+    int points = highestPoints(userPoints);
+    (*user).score += points;
+
+    printf("Do you want to continue? (Y/N)?");
+    fflush(stdin);
+    scanf("%c",&(*user).choice);
+    charError((*user).choice);
+
+    if(!contGame((*user).choice)){
+        printf("Ok byee ...");
+        exit(1);
+    }
+
+    if (points == 0){
+        printf("\nZONK!!!!");
+        printf("\nYour score: Z");
+    }else{
+        printf("\nYour score: %d ",points);
+    }
 }
 
 void playUser(User *user){
     for (int i = 0; i < 6; ++i) {
         (*user).dice[i] = roll();
     }
-    printf("\nYour Turn: \n");
-    printf("You got:\n");
-    printDice((*user).dice);
+    printf("\nYour Turn:");
     equalSign();
-
+    printf("\nYou got => ");
+    printDice((*user).dice);
+    userDecider(user);
 }
+
+void scoresheet(Comp *comp, User *user){
+    printf("\nOur scoresheet"
+                   "\n=========================="
+                   "\nMy score\tYour score"
+                   "\n%d\t\t%d",(*comp).score,(*user).score);
+}
+
 int main(){
     srand(time(NULL));
     Game game;
@@ -212,7 +286,8 @@ int main(){
     printf("OK, lets get started!\n");
 
     start(userAddr,compAddr);
-
+    (*compAddr).score = 0;
+    (*userAddr).score = 0;
     for(i = 0;i < game.rounds;++i){
         if(comp.dieInit >= user.dieInit){ // comps start if dice is >= user.dieInit
             playComputer(compAddr);
@@ -222,6 +297,16 @@ int main(){
             playUser(userAddr);
             playComputer(compAddr);
         }
+
+        scoresheet(compAddr,userAddr);
     }
 
+    if((*compAddr).score > (*userAddr).score){
+        printf("\nI am the WINNER!");
+    } else if ((*compAddr).score == (*userAddr).score){
+        printf("\nWe tied!");
+    } else{
+        printf("\nYou are the WINNER!\n\n");
+    }
+    system("PAUSE");
 }
